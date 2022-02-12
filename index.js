@@ -1,19 +1,29 @@
+
 const TelegramBot = require('node-telegram-bot-api');
 const request = require('request')
-
-const token = '2115964153:AAEqQwAyean9K78TFPD7H5eyGfqjCpVOH6E';
+const Promise = require('bluebird');
+Promise.config({
+  cancellation: false
+});
+const token = '5211880934:AAFug4aHyBGqDyVE2UuZmw-yNVdQns47H5k'
 
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new TelegramBot(token, {polling: true});
 
 // Matches "/echo [whatever]"
-bot.onText(/\/curse/, (msg, match) => {
- 
+// const start = ()=>{
+//     bot.setMyCommands([
+//         {command: '/start', description : 'bot to start'},
+//         {command : '/info', description : "take info about the bot"},
+//         {command : '/game', description : "play the game"}
 
-  const chatId = msg.chat.id;
-  
+//     ])}
+bot.on("message", async (msg, match) => {
+   const chatId = msg.chat.id;
+   const  text = msg.text;
 
-  bot.sendMessage(chatId, 'Выберите какая валюта вас интересует', {
+  if(text == "/curse"){
+ bot.sendMessage(chatId, 'Выберите какая валюта вас интересует', {
       reply_markup: {
           inline_keyboard: [
               [
@@ -29,31 +39,56 @@ bot.onText(/\/curse/, (msg, match) => {
                 text: '₽ RUB🇷🇺',
                 callback_data: 'RUB'
             }
+           ],
+           [
+              
+               {  text: '₽ KYG🇰🇬',
+            callback_data: 'KYG'},
+
+               {  text: '₽ KZT🇰🇿',
+               callback_data: 'тңг'}, 
+               
+               {  text: '₽ TJS🇹🇯',
+               callback_data: 'TJS'},
+
+           ],
+           [
+            {  text: '₽ CNY🇨🇳',
+            callback_data: 'CNY'},
+
+            {  text: '₩ KOR🇰🇷',
+            callback_data: 'KRW'},
+
+            
+            {  text: '￥ JPY🇯🇵',
+            callback_data: 'JPY'},
+           ],
+           [
+               { text : "GOLD🪙",
+               callback_data: 'GOLD'}
            ]
+
           ]
       }
   });
-});
-
+}}) 
 
 bot.on('callback_query', query=>{
     const id = query.message.chat.id;
-    request('https://cbu.uz/ru/arkhiv-kursov-valyut/json/', function (error, response, body){
+    request('https://cbu.uz/ru/services/open_data/rates/json/', function (error, response, body){
         const data = JSON.parse(body);
-        const result = data.filter(item => item.Ccy === query.data)[0];
+        const result = data.filter(item => item.G1 === query.data)[0];
         const flag = {
             'EUR' : '🇪🇺',
             'USD' : '🇺🇸',
-            'RUB' : '🇷🇺'
+            'RUB' : '🇮🇳',
+            'KOR' : '🇰🇷'
         }
         let md = `
-        *${flag[result.Ccy]} ${result.Nominal} ${result.Ccy} 💱 ${result.Rate} UZS🇺🇿*
-        ${result.CcyNm_RU}
-        _${result.Date}_
-        `;
+        *${flag[result.G1]} ${result.G3} ${result.G1} 💱 ${result.G4} UZS🇺🇿*${result.G6}_${result.G5}_`;
 
         bot.sendMessage(id, md, {parse_mode: 'Markdown'})
     } )
 })
 
- 
+//  start()
